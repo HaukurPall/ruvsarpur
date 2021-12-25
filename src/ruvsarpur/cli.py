@@ -86,9 +86,6 @@ def main():
         # Construct the argument parser for the commandline
         args = parseArguments()
 
-        # Get ffmpeg exec
-        ffmpegexec = findffmpeg(args.ffmpeg, working_dir)
-
         # Create the full filenames for the config files
         previously_recorded_file_name = createFullConfigFileName(args.portable, PREV_LOG_FILE)
         tv_schedule_file_name = createFullConfigFileName(args.portable, TV_SCHEDULE_LOG_FILE)
@@ -319,6 +316,8 @@ def main():
 
             # print(playlist_data
             # Now ask FFMPEG to download and remux all the fragments for us
+            # Get ffmpeg exec
+            ffmpegexec = findffmpeg(args.ffmpeg, working_dir)
             result = download_m3u8_playlist_using_ffmpeg(
                 ffmpegexec,
                 playlist_data["url"],
