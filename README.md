@@ -3,23 +3,22 @@
 </p>
 
 # RÚV Sarpur
-[`ruvsarpur.py`](#ruvsarpurpy) is a python script that allows you to list, search and download TV shows off the Icelandic RÚV Sarpurinn website. 
+
+This is a fork from https://github.com/sverrirs/ruvsarpur [Project website](https://sverrirs.github.io/ruvsarpur/)
 
 [`webvtttosrt.py`](#webvtttosrtpy) is a python script that can convert webvtt and vtt files to the .srt subtitles format. (This format is used by the RÚV website for some episodes).
 
-Project website at https://sverrirs.github.io/ruvsarpur/
-
-If you are intending on using this tool outside of Iceland then I recommend a [VPN connection](http://www.expressrefer.com/refer-a-friend/30-days-free/?referrer_id=11147993). Its setup is discussed in more detail in a section near the end of this document
-
 # Demo
+
 <p align="center">
   <img src="https://raw.githubusercontent.com/sverrirs/ruvsarpur/master/img/demo01.gif" alt="Usage Demo" title="Usage Demo">
 </p>
 
 # Requirements
-Python version 3.x
 
-Before first use make sure you install all requirements using 
+Python version 3.7
+
+Before first use make sure you install all requirements using
 
 ```
 pip install -r requirements.txt
@@ -27,23 +26,28 @@ pip install -r requirements.txt
 
 > If you run into trouble installing the python-levenstein package (it is optional) then check out this solution on StackOverflow http://stackoverflow.com/a/33163704
 
-*This tool includes the ffmpeg video processing kit. If you are on any other platform than Windows 64bit you will need to [download the binary executable of ffmpeg](https://www.ffmpeg.org/download.html) for your operating system from the official website and then specify its path using the `--ffmpeg` command line parameter.*
+_This tool includes the ffmpeg video processing kit. If you are on any other platform than Windows 64bit you will need to [download the binary executable of ffmpeg](https://www.ffmpeg.org/download.html) for your operating system from the official website and then specify its path using the `--ffmpeg` command line parameter._
 
 # ruvsarpur.py
+
 This is a python script that allows you to list, search and download TV shows off the Icelandic RÚV Sarpurinn website. It is operated solely through a windows or linux command prompt.
 
 ## Finding and listing shows
+
 After downloading the script can be run by typing in
+
 ```
 python ruvsarpur.py --help
 ```
 
 To list all available shows and their information use the `--list` switch. This switch can be used with any other argument to disable downloading and have the script only list matches.
+
 ```
 python ruvsarpur.py --list
 ```
 
 The script downloads the tv schedule for the last month (that is the default availability of shows on the RÚV website). By default the script will only refresh the schedule once per day. You can force it to re-download the tv schedule by using the `--refresh` switch
+
 ```
 python ruvsarpur.py --list --refresh
 ```
@@ -55,10 +59,13 @@ python ruvsarpur.py --portable --list
 ```
 
 To find shows by title use the `--find` argument
+
 ```
 python ruvsarpur.py --list --find "Hvolpa"
 ```
+
 which returns
+
 ```
 Found 3 shows
 4852061: Hvolpasveitin (11 af 24)
@@ -72,6 +79,7 @@ Found 3 shows
 ```
 
 The results are formatted in the following pattern
+
 ```
 {pid} : {show title}
 {sid} : {showtime}
@@ -88,11 +96,13 @@ python ruvsarpur.py --list --find "Hvolpa" --desc
 To download shows you can either use the `sid` (series id) or the `pid` (program id) to select what to download.
 
 Using the `--sid` will download all available episodes in the series
+
 ```
 python ruvsarpur.py --sid 18457
 ```
 
 Using the `--pid` will only download a single episode
+
 ```
 python ruvsarpur.py --pid 4849075
 ```
@@ -102,23 +112,27 @@ Both the `--sid` and `--pid` parameters support multiple ids
 ```
 python ruvsarpur.py --sid 18457 21810
 ```
+
 ```
 python ruvsarpur.py --pid 4849075 4852060 4849078
 ```
 
 Use the `-o` or `--output` argument to control where the video files will be saved to. Please make sure that you don't end your path with a backwards slash.
+
 ```
 python ruvsarpur.py --pid 4849075 -o "c:\videos\ruv"
 ```
 
 The script keeps track of the shows that have already been downloaded. You can force it to re-download files by using the `--force` switch
+
 ```
 python ruvsarpur.py --pid 4849075 --force
 ```
 
-If recoding history has been lost, files copied between machines or they are incorrectly labelled as previously recorded there is a `--checklocal` switch available. 
+If recoding history has been lost, files copied between machines or they are incorrectly labelled as previously recorded there is a `--checklocal` switch available.
 
 When this switch is specified the script will check to see if the video file exists on the user's machine before attempting a re-download. If it doesn't exist then it will start the download, if the file exists it will record it's pid as recorded and skip re-downloading it.
+
 ```
 python ruvsarpur.py --pid 4849075 --checklocal
 ```
@@ -130,49 +144,52 @@ The script automatically attempts to download videos using the 'HD1080' video qu
 Note: If you're intending the video files to be exclusively used on mobile phones then using the 'Normal' quality or 1200kbps will in most cases be sufficient and save you a lot of space and bandwidth. Normal is equivilent of SD (standard-definition).
 
 By using `--quality` you instruct the script to download either a higher or lower quality video.
+
 ```
 python ruvsarpur.py --pid 4849075 --quality "HD720"
 ```
 
 The available values are:
 
-| Value | Description | kbps |
-| ----- | ----- | ----- |
-| `"Very Low"` | Very small, for very old mobile devices with small screens (resolution under 320x240) | 500kbps |
-| `"Low"` | Small, for older devices, e.g. iPhone 4G (resolution under 640x360) | 800kbps |
-| `"Normal"` | Normal quality expected in a standard definition broadcast, works well on most devices. This is the default. | 1200kbps |
-| `"HD720"` | 720p good quality, intended for HD-ready devices | 2400kbps |
-| `"HD1080"` | 1080p very good quality intended for newer devices marked as Full-HD resolution. This produces very big files. | 3600kbps |
-
+| Value        | Description                                                                                                    | kbps     |
+| ------------ | -------------------------------------------------------------------------------------------------------------- | -------- |
+| `"Very Low"` | Very small, for very old mobile devices with small screens (resolution under 320x240)                          | 500kbps  |
+| `"Low"`      | Small, for older devices, e.g. iPhone 4G (resolution under 640x360)                                            | 800kbps  |
+| `"Normal"`   | Normal quality expected in a standard definition broadcast, works well on most devices. This is the default.   | 1200kbps |
+| `"HD720"`    | 720p good quality, intended for HD-ready devices                                                               | 2400kbps |
+| `"HD1080"`   | 1080p very good quality intended for newer devices marked as Full-HD resolution. This produces very big files. | 3600kbps |
 
 ## Advanced uses
 
-*Note: As of v7.0.0 neither `--category` or `--days` are supported anymore.*
+_Note: As of v7.0.0 neither `--category` or `--days` are supported anymore._
 
-The `--new` flag limits the search and downloads to only new shows (e.g. shows that have just aired their first episode in a new multi-episode series). The example below will only list new children's shows on the TV schedule. 
+The `--new` flag limits the search and downloads to only new shows (e.g. shows that have just aired their first episode in a new multi-episode series). The example below will only list new children's shows on the TV schedule.
+
 ```
 python ruvsarpur.py --list --new
 ```
 
 The `--keeppartial` flag can be used to keep partially downloaded files in case of errors, if omitted then the script deletes any incomplete partially downloaded files if an error occurs (this is the default behavior).
 
-
 Use `--originaltitle` flag to include the original show name (usually the foreign title) in the output file.
+
 ```
 python ruvsarpur.py --list --find "Hvolpa" --originaltitle
 ```
+
 which returns
+
 ```
 Found 2 shows
-4852061: Hvolpasveitin (11 af 24) - Paw Patrol 
+4852061: Hvolpasveitin (11 af 24) - Paw Patrol
   21810: Sýnt 2016-09-26 18:01
 
 4849078: Hvolpasveitin (20 af 26) - Paw Patrol
   18457: Sýnt 2016-09-25 08:00
 ```
 
-
 ## Scheduling downloads
+
 You can schedule this script to run periodically to download new episodes in a series. To have the script correctly handle downloading re-runs and new seasons then it is recommended to use the `--find` option and specify the series title.
 
 ```
@@ -180,11 +197,11 @@ python ruvsarpur.py --find "Hvolpasveitin" -o "c:\videos\ruv\hvolpasveit"
 ```
 
 > When running this in a bat or cmd file in windows ensure you include the following two lines at the top of the bat file
-> `@echo off`
-> `chcp 1252`
+> `@echo off` > `chcp 1252`
 > Otherwise the icelandic character set will not be correctly understood when the batch file is run
 
 ### Downloading only a particular season of a series
+
 In the case you only want to download a particular run of a series then you should use the `--sid` option to monitor a particular tv series and `-o` to set the directory to save the video file into.
 
 ```
@@ -192,16 +209,19 @@ python ruvsarpur.py --sid 18457 -o "c:\videos\ruv\hvolpasveit-season-1"
 ```
 
 ## RÚV Video-On-Demand (VOD) service features
-*Note: As of v7.0.0 the script only supports VOD and the `--onlyvod` option has been removed*
+
+_Note: As of v7.0.0 the script only supports VOD and the `--onlyvod` option has been removed_
 
 ## Frequently Asked Questions
 
 #### I keep getting a message `SHOW_TITLE not found on server (pid=PID_NUMBER)` when trying to download using your script.
+
 _Cause_: The file is not available on the RÚV servers.
 
 The script performs an optimistic attempt to locate any show that is listed in the broadcasting programme. However the files are not guaranteed to be still available on the RÚV servers. This is the error that is shown in those cases.
 
 ## Using OpenVPN to automatically connect to a VPN if necessary
+
 In case you want your script to be run over a [VPN connection](http://www.expressrefer.com/refer-a-friend/30-days-free/?referrer_id=11147993) then it is recommended that you use the `OpenVPN` software. It is widely supported by VPN providers and can be easily used via command line.
 
 Below is an example of how to integrate a VPN connection sequence before running the ruvsarpur.py downloader on Windows
@@ -223,31 +243,37 @@ taskkill /f /im openvpn.exe
 _Note that this code **must** be run under Administrator/sudo privileges due to modifications and changes to the system that `openvpn.exe` makes to redirect internet traffic through its VPN connection._
 
 # webvtttosrt.py
+
 is a general purpose python script that can convert webvtt and vtt files to the .srt subtitles format. This tool is useful when you want to merge subtitle files to existing mp4 video files using the [GPAC mp4box utility](https://github.com/gpac/gpac/) or similar tools.
 
 ## How to use
+
 This is how you could convert webvtt and vtt subtitle files to SRT and merge them with the source video file using the [GPAC Mp4Box](https://github.com/gpac/gpac/) utility:
 
 1. First download the subtitles file (usually available in the source of the website that contains the web player. Search for ".webvtt" or ".vtt" in the website HTML source)
 
 2. Convert to .srt using the script by issuing
-      ```
-      python webvtttosrt.py -i subtitles.vtt
-      ```
+
+   ```
+   python webvtttosrt.py -i subtitles.vtt
+   ```
 
 3. Add the srt file to the mp4 video stream (assuming install location for [GPAC](https://github.com/gpac/gpac/))
-      ```
-      "C:\Program Files\GPAC\mp4box.exe" -add "video.mp4" -add "subtitles.srt":lang=is:name="Icelandic" "merged-video.mp4"
-      ```
+
+   ```
+   "C:\Program Files\GPAC\mp4box.exe" -add "video.mp4" -add "subtitles.srt":lang=is:name="Icelandic" "merged-video.mp4"
+   ```
 
    if the subtitle font is too small you can make it larger by supplying the ':size=XX' parameter like
-     ```
-     "C:\Program Files\GPAC\mp4box.exe" -add "video.mp4" -add "subtitles.srt":size=32:lang=is:name="Icelandic" "merged-video.mp4"
-     ```
+
+   ```
+   "C:\Program Files\GPAC\mp4box.exe" -add "video.mp4" -add "subtitles.srt":size=32:lang=is:name="Icelandic" "merged-video.mp4"
+   ```
 
 ## Conversion example
 
 Given the following WEBVTT subtitle file
+
 ```
 1-0
 00:01:07.000 --> 00:01:12.040 line:10 align:middle
@@ -261,6 +287,7 @@ Yeah and this is the second line
 ```
 
 the script will produce the following SRT conversion
+
 ```
 1
 00:01:07,000 --> 00:01:12,040

@@ -1,9 +1,5 @@
 #!/usr/bin/env python
 # coding=utf-8
-__version__ = "7.0.2"
-# When modifying remember to issue a new tag command in git before committing, then push the new tag
-#   git tag -a v6.0.0 -m "v6.0.0"
-#   git push origin master --tags
 """
 Python script that allows you to download TV shows off the Icelandic RÚV Sarpurinn website.
 The script is written in Python 3.5+
@@ -18,46 +14,33 @@ Author: Sverrir Sigmundarson  info@sverrirs.com  https://www.sverrirs.com
 #    chcp 65001
 # The output will be a little garbled but at least you will be able to dump utf-8 data to the console
 
-# Requires the following
-#   pip install colorama
-#   pip install termcolor
-#   pip install python-dateutil
-#   pip install requests
-#   pip install simplejson
-#   pip install fuzzywuzzy
-#   pip install python-levenshtein
-#      For alternative install http://stackoverflow.com/a/33163704
-
-import sys, os.path, re, time
-import traceback  # For exception details
-import textwrap  # For text wrapping in the console window
-from colorama import init, deinit  # For colorized output to console windows (platform and shell independent)
-from termcolor import colored  # For shorthand color printing to the console, https://pypi.python.org/pypi/termcolor
-from pathlib import Path  # to check for file existence in the file system
-import json  # To store and load the tv schedule that has already been downloaded
 import argparse  # Command-line argument parser
-import requests  # Downloading of data from HTTP
-import datetime, dateutil.relativedelta  # Formatting of date objects and adjusting date ranges
-from xml.etree import ElementTree  # Parsing of TV schedule XML data
-from fuzzywuzzy import fuzz  # For fuzzy string matching when trying to find programs by title or description
-from operator import (
-    itemgetter,
-)  # For sorting the download list items https://docs.python.org/3/howto/sorting.html#operator-module-functions
-import ntpath  # Used to extract file name from path for all platforms http://stackoverflow.com/a/8384788
+import datetime  # Formatting of date objects and adjusting date ranges
 import glob  # Used to do partial file path matching (when searching for already downloaded files) http://stackoverflow.com/a/2225582/779521
-import uuid  # Used to generate a ternary backup local filename if everything else fails.
-
-import urllib.request, urllib.parse  # Downloading of data from URLs (used with the JSON parser)
-import requests  # Downloading of data from HTTP
-from requests.adapters import HTTPAdapter  # For Retrying
-from requests.packages.urllib3.util.retry import Retry  # For Retrying
-import ssl
-import http.client as http_client
-
+import json  # To store and load the tv schedule that has already been downloaded
+import ntpath  # Used to extract file name from path for all platforms http://stackoverflow.com/a/8384788
+import os.path
+import re
 import subprocess  # To execute shell commands
+import sys
+import textwrap  # For text wrapping in the console window
+import time
+import traceback  # For exception details
+import uuid  # Used to generate a ternary backup local filename if everything else fails.
+from operator import itemgetter
+from pathlib import Path  # to check for file existence in the file system
+from xml.etree import ElementTree  # Parsing of TV schedule XML data
+
+import dateutil.relativedelta
+import requests  # Downloading of data from HTTP
+from colorama import deinit, init
+from fuzzywuzzy import fuzz  # For fuzzy string matching when trying to find programs by title or description
+from requests.adapters import HTTPAdapter  # For Retrying
 
 # Disable SSL warnings
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
+from requests.packages.urllib3.util.retry import Retry  # For Retrying
+from termcolor import colored  # For shorthand color printing to the console, https://pypi.python.org/pypi/termcolor
 
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
@@ -871,7 +854,7 @@ def getGroup(regex, group_name, haystack):
 
 
 # The main entry point for the script
-def runMain():
+def main():
     try:
         init()  # Initialize the colorama library
 
@@ -1137,4 +1120,4 @@ def runMain():
 
 # If the script file is called by itself then execute the main function
 if __name__ == "__main__":
-    runMain()
+    main()

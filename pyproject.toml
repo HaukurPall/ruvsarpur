@@ -7,6 +7,11 @@ authors = [
     "Haukur Páll Jónsson <haukurpalljonsson@gmail.com>",
 ]
 license = "MIT License"
+packages = [{ include = "ruvsarpur", from = "src" }]
+readme = "README.md"
+repository = "https://github.com/HaukurPall/ruvsarpur"
+[tool.poetry.scripts]
+ruvsarpur = "ruvsarpur.cli:main"
 
 [tool.black]
 line-length = 120
@@ -19,6 +24,7 @@ requests = "^2.26.0"
 simplejson = "^3.17.6"
 fuzzywuzzy = "^0.18.0"
 python-Levenshtein = "^0.12.2"
+colorama = "^0.4.4"
 
 [tool.poetry.dev-dependencies]
 isort = "^5.10.1"
