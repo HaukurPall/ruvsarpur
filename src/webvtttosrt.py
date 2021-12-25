@@ -48,116 +48,125 @@ Mp4Box utility:
 """
 
 import sys, os.path, re
-from colorama import init, deinit # For colorized output to console windows (platform and shell independent)
-from termcolor import colored # For shorthand color printing to the console, https://pypi.python.org/pypi/termcolor
-from pathlib import Path # to check for file existence in the file system
-import argparse # Command-line argument parser
-import ntpath # Used to extract file name from path for all platforms http://stackoverflow.com/a/8384788
+from colorama import init, deinit  # For colorized output to console windows (platform and shell independent)
+from termcolor import colored  # For shorthand color printing to the console, https://pypi.python.org/pypi/termcolor
+from pathlib import Path  # to check for file existence in the file system
+import argparse  # Command-line argument parser
+import ntpath  # Used to extract file name from path for all platforms http://stackoverflow.com/a/8384788
 
 # Lambdas as shorthands for printing various types of data
 # See https://pypi.python.org/pypi/termcolor for more info
-color_err = lambda x: colored(x, 'red')
+color_err = lambda x: colored(x, "red")
 
 
 def parseArguments():
-  parser = argparse.ArgumentParser()
-  
-  parser.add_argument("-o", "--output", help="The path to the folder where the converted file should be stored",
-                                        type=str)
-                                        
-  parser.add_argument("-i", "--input", help="Full path to the input file (WEBVTT format)",
-                                        type=str)
-                                                                                
-  return parser.parse_args()
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument(
+        "-o", "--output", help="The path to the folder where the converted file should be stored", type=str
+    )
+
+    parser.add_argument("-i", "--input", help="Full path to the input file (WEBVTT format)", type=str)
+
+    return parser.parse_args()
+
 
 def readInputSubtitlesFile(webvtt_file):
-  try:
-    lines = []
-    with open(webvtt_file, 'r+', encoding='utf-8') as infile:
-      for line in infile:
-        lines.append(line.rstrip('\n'))
-    
-    return lines
-  except FileNotFoundError:
-    print(color_err("Error: '{0}' not found.".format(webvtt_file)))
-    return None
-    
-def saveOutputSubtitlesFile(srtdata,out_file_name):
-  
-  # First make sure that the output path and directories exist before writing
-  out_dir_path = os.path.dirname(out_file_name)
-  if( out_dir_path ):
-    os.makedirs(os.path.dirname(out_file_name), exist_ok=True)
+    try:
+        lines = []
+        with open(webvtt_file, "r+", encoding="utf-8") as infile:
+            for line in infile:
+                lines.append(line.rstrip("\n"))
 
-  with open(out_file_name, 'w+', encoding='utf-8') as out_file:
-    for srt in srtdata:
-      for line in srt:
-        out_file.write("%s\n" % line)
-      out_file.write('\n') # Two Empty separator lines
-  
+        return lines
+    except FileNotFoundError:
+        print(color_err("Error: '{0}' not found.".format(webvtt_file)))
+        return None
+
+
+def saveOutputSubtitlesFile(srtdata, out_file_name):
+
+    # First make sure that the output path and directories exist before writing
+    out_dir_path = os.path.dirname(out_file_name)
+    if out_dir_path:
+        os.makedirs(os.path.dirname(out_file_name), exist_ok=True)
+
+    with open(out_file_name, "w+", encoding="utf-8") as out_file:
+        for srt in srtdata:
+            for line in srt:
+                out_file.write("%s\n" % line)
+            out_file.write("\n")  # Two Empty separator lines
+
+
 ################################################################
 # The main entry point for the script
 ################################################################
 def runMain():
-  try:
-    init() # Initialize the colorama library
-    reg_timecode = re.compile(r"([0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]{3} \-\-\> [0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]{3})", re.DOTALL)
-    
-    # Construct the argument parser for the commandline
-    args = parseArguments()
-    
-    # If no output then create it
-    if( args.output is None ):
-      outfile = os.path.splitext(args.input)[0]+'.srt'
-    else:
-      outfile = args.output
-      
-    vttlines = readInputSubtitlesFile(args.input)
-    if( vttlines is None ):
-      return # Exit immediately
+    try:
+        init()  # Initialize the colorama library
+        reg_timecode = re.compile(
+            r"([0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]{3} \-\-\> [0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]{3})", re.DOTALL
+        )
 
-    if( len(vttlines) <= 0 ):
-      print("No data found in input file. Exiting as there is nothing to do.")
-      return
+        # Construct the argument parser for the commandline
+        args = parseArguments()
 
-    srtlines = []   # Contains all of the srt converted subtitle entries
-    srtline = None  # Contains the current srt subitle entry
-    
-    for vtt_line in vttlines:
-      if( vtt_line == "WEBVTT"):
-        continue
-      
-      # If empty input line and we have something in the srtline variable then append it to srt and continue
-      if( vtt_line == ''):
-        if( not srtline is None ):
-          srtlines.append(srtline)
-          srtline = None
-        continue # Skip the line
-      else:
-        if( srtline is None ):
-          srtline = []
-          srtline.append(len(srtlines)+1) # the number of subtitle entries added, add one as we want to start at 1 instead of 0
-        elif( len(srtline) == 1 ):
-          # Dealing with timing info (the regex trims anything trailing the timecode)
-          timecode = reg_timecode.match(vtt_line).group(1)
-          srtline.append(timecode.replace('.',',')) # SRT does not handle . as separators for msec but uses , instead
-        elif( len(srtline) > 1 ):
-          # Dealing with the actual subtitle contents, just add all of them unchanged
-          srtline.append(vtt_line)
+        # If no output then create it
+        if args.output is None:
+            outfile = os.path.splitext(args.input)[0] + ".srt"
+        else:
+            outfile = args.output
 
-    # End for
-    
-    # Remember to put the final srt into the mix
-    if( not srtline is None ):
-      srtlines.append(srtline)
-    
-    # Write the file
-    saveOutputSubtitlesFile(srtlines, outfile)
-    print("Success, file converted to SRT format")
-  finally:
-    deinit() #Deinitialize the colorama library
+        vttlines = readInputSubtitlesFile(args.input)
+        if vttlines is None:
+            return  # Exit immediately
+
+        if len(vttlines) <= 0:
+            print("No data found in input file. Exiting as there is nothing to do.")
+            return
+
+        srtlines = []  # Contains all of the srt converted subtitle entries
+        srtline = None  # Contains the current srt subitle entry
+
+        for vtt_line in vttlines:
+            if vtt_line == "WEBVTT":
+                continue
+
+            # If empty input line and we have something in the srtline variable then append it to srt and continue
+            if vtt_line == "":
+                if not srtline is None:
+                    srtlines.append(srtline)
+                    srtline = None
+                continue  # Skip the line
+            else:
+                if srtline is None:
+                    srtline = []
+                    srtline.append(
+                        len(srtlines) + 1
+                    )  # the number of subtitle entries added, add one as we want to start at 1 instead of 0
+                elif len(srtline) == 1:
+                    # Dealing with timing info (the regex trims anything trailing the timecode)
+                    timecode = reg_timecode.match(vtt_line).group(1)
+                    srtline.append(
+                        timecode.replace(".", ",")
+                    )  # SRT does not handle . as separators for msec but uses , instead
+                elif len(srtline) > 1:
+                    # Dealing with the actual subtitle contents, just add all of them unchanged
+                    srtline.append(vtt_line)
+
+        # End for
+
+        # Remember to put the final srt into the mix
+        if not srtline is None:
+            srtlines.append(srtline)
+
+        # Write the file
+        saveOutputSubtitlesFile(srtlines, outfile)
+        print("Success, file converted to SRT format")
+    finally:
+        deinit()  # Deinitialize the colorama library
 
 
 # If the script file is called by itself then execute the main function
-if __name__ == '__main__':
-  runMain()
+if __name__ == "__main__":
+    runMain()

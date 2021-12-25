@@ -1,7 +1,0 @@
-colorama
-termcolor
-python-dateutil
-requests
-simplejson
-fuzzywuzzy
-python-levenshtein
