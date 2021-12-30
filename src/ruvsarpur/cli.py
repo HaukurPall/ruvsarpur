@@ -5,7 +5,7 @@ from typing import Optional, Tuple
 import click
 from tabulate import tabulate
 
-from ruvsarpur.ruv_client import load_programs
+from ruvsarpur.ruv_client import Programs, load_programs
 from ruvsarpur.search import get_all_programs_by_pattern, program_results
 
 DEFAULT_WORK_DIR = Path.home() / "ruvsarpur"
@@ -51,11 +51,11 @@ def search(patterns: Tuple[str, ...], ignore_case: bool, only_ids: bool, force_r
     "pattern one" "pattern two"."""
     # TODO: Add support for checking date of last programs fetch.
     programs = load_programs(force_reload=force_reload_programs, cache=WORK_DIR / PROGRAMS_JSON)
-    found_programs = []
+    found_programs: Programs = {}
     for pattern in patterns:
-        found_programs.extend(get_all_programs_by_pattern(programs, pattern, ignore_case))
+        found_programs.update(get_all_programs_by_pattern(programs, pattern, ignore_case))
     if only_ids:
-        click.echo(" ".join([program["id"] for program in found_programs]))
+        click.echo(" ".join([str(id) for id in found_programs]))
     else:
         headers, rows = program_results(found_programs)
         click.echo(tabulate(tabular_data=rows, headers=headers, tablefmt="github"))
