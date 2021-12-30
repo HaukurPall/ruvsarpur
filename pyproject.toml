@@ -1,10 +1,10 @@
 [tool.poetry]
 name = "ruvsarpur"
-version = "7.0.2"
+version = "8.0.0"
 description = "Python script to download shows off the Icelandic RÚV website."
 authors = [
-    "Sverrir Sigmundarson <info@sverris.com>",
     "Haukur Páll Jónsson <haukurpalljonsson@gmail.com>",
+    "Sverrir Sigmundarson <info@sverris.com>",
 ]
 license = "MIT License"
 packages = [{ include = "ruvsarpur", from = "src" }]
@@ -18,13 +18,10 @@ line-length = 120
 
 [tool.poetry.dependencies]
 python = "^3.7"
-termcolor = "^1.1.0"
-python-dateutil = "^2.8.2"
-requests = "^2.26.0"
-simplejson = "^3.17.6"
-fuzzywuzzy = "^0.18.0"
-python-Levenshtein = "^0.12.2"
-colorama = "^0.4.4"
+m3u8 = "^0.9.0"
+gql = { extras = ["all"], version = "^3.0.0rc0", allow-prereleases = true }
+click = "^8.0.3"
+tabulate = "^0.8.9"
 
 [tool.poetry.dev-dependencies]
 isort = "^5.10.1"
