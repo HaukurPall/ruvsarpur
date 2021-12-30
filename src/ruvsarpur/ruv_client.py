@@ -1,11 +1,14 @@
 import asyncio
 import json
+import logging
 from pathlib import Path
 from typing import Dict, List, TypedDict
 
 from gql import Client, gql
 from gql.client import AsyncClientSession
 from gql.transport.aiohttp import AIOHTTPTransport
+
+log = logging.getLogger(__name__)
 
 
 class Episode(TypedDict):
@@ -30,13 +33,7 @@ class RUVClient:
 
     def __init__(self) -> None:
         self.url = "https://www.ruv.is/gql/"
-        transport = AIOHTTPTransport(
-            self.url,
-            headers={
-                "Referer": "https://www.ruv.is/sjonvarp",
-                "Origin": "https://www.ruv.is",
-            },
-        )
+        transport = AIOHTTPTransport(self.url)
         self.client = Client(transport=transport, execute_timeout=30)
 
     @staticmethod
@@ -171,4 +168,7 @@ def load_programs(force_reload, cache: Path) -> Programs:
         except FileNotFoundError:
             programs = RUVClient().get_all_programs()
     save_programs(cache, programs)
+    log.info(
+        f"Loaded {len(programs)} programs and {sum([len(program['episodes']) for program in programs.values()])} episodes"
+    )
     return programs
