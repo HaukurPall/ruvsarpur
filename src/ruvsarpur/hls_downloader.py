@@ -27,11 +27,11 @@ def create_ffmpeg_download_command(url: str, stream_num: int, output_file: Path)
     return [
         # fmt: off
         "-i", url,
-        "-map", f"0:v:{stream_num}", # First input file, select stream_num from video streams
-        "-map", f"0:a:{stream_num}", # Same for audio
-        "-codec", "copy" # No re-encoding
+        "-map", f"0:v:{stream_num}",  # First input file, select stream_num from video streams
+        "-map", f"0:a:{stream_num}",  # Same for audio
+        "-codec", "copy",  # No re-encoding
         # TODO: Test if this works and whether at all the some subtitles are ever sent.
-        "-codec:s", "srt", # Except for subtitles due to some caveats in ffmpeg subtitle handling.
+        "-codec:s", "srt",  # Except for subtitles due to some caveats in ffmpeg subtitle handling.
         str(output_file)
         # fmt: on
     ]
