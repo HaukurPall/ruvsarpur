@@ -41,7 +41,7 @@ def program_results(programs: Programs) -> Tuple[ProgramHeader, List[ProgramRow]
                     program["foreign_title"],
                     len(program["episodes"]),
                     program["id"],
-                    program["short_description"][:40],
+                    program["short_description"][:40] if program["short_description"] is not None else "",
                 )
             )
         except KeyError:

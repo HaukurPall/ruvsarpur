@@ -16,7 +16,7 @@ DEFAULT_WORK_DIR = Path.home() / "ruvsarpur"
 WORK_DIR = DEFAULT_WORK_DIR
 PROGRAMS_JSON = "programs.json"
 DOWNLOAD_DIR_NAME = "downloads"
-PREVRECORDED_LOG = "prevrecorded.log"
+DOWNLOAD_LOG = "downloaded.log"
 log = logging.getLogger(__name__)
 
 
@@ -40,6 +40,8 @@ def main(work_dir: Path, log_level):
     WORK_DIR = work_dir
     if not WORK_DIR.exists():
         WORK_DIR.mkdir(parents=True, exist_ok=True)
+    if not (WORK_DIR / DOWNLOAD_DIR_NAME).exists():
+        (WORK_DIR / DOWNLOAD_DIR_NAME).mkdir(parents=True, exist_ok=True)
 
 
 @main.command()
@@ -69,7 +71,7 @@ def search(patterns: Tuple[str, ...], ignore_case: bool, only_ids: bool, force_r
 
 def maybe_read_stdin(ctx, param, value):
     if not value and not click.get_text_stream("stdin").isatty():
-        return click.get_text_stream("stdin").read().strip()
+        return click.get_text_stream("stdin").read().strip().split(" ")
     else:
         return value
 
@@ -91,10 +93,9 @@ Usually ranges from 0-4, where 0 is the worst quality (~426x240) and 4 is the be
     default=False,
     help="Should we force reloading the program list?",
 )
-def download_program(program_ids, quality: Optional[int], force_reload_programs):
+def download_program(program_ids: Tuple[str, ...], quality: Optional[int], force_reload_programs):
     """Download the supplied program ids. Can be multiple.
     Use the 'search' functionality with --only-ids to get them and pipe them to this command."""
-    program_id_list: List[str] = program_ids.strip().split(" ")
     programs = load_programs(force_reload=force_reload_programs, cache=WORK_DIR / PROGRAMS_JSON)
     selected_episodes = {
         episode["id"]: {
@@ -104,26 +105,34 @@ def download_program(program_ids, quality: Optional[int], force_reload_programs)
             "file": episode["file"],
             "id": episode["id"],
         }
-        for program_id in program_id_list
+        for program_id in program_ids
         for episode in programs[program_id]["episodes"]
     }
-    downloaded_episodes = read_downloaded_episodes(WORK_DIR / PREVRECORDED_LOG)
+    downloaded_episodes = read_downloaded_episodes(WORK_DIR / DOWNLOAD_LOG)
     episodes_to_download = {id: episode for id, episode in selected_episodes.items() if id not in downloaded_episodes}
     log.info(f"Will download {len(episodes_to_download)} episodes")
-    for id, episode in tqdm(episodes_to_download.items()):
+    iter = tqdm(episodes_to_download.items())
+    for id, episode in iter:
+        iter.set_description(f"Downloading {episode['p_title']} - {episode['title']}")
         episode_name = f"{episode['p_title']} - {episode['title']} - {episode['foreign_title']}"
-        log.info(f"Working on {episode_name}")
+        # TODO: Handle mp3 files
         resolutions = load_m3u8_available_resolutions(episode["file"])
-        log.info(f"Available resolutions: {resolutions_to_str(resolutions)}")
         if quality is None:
             quality = len(resolutions) - 1
-        log.info(f"You selected quality={quality}:{'x'.join([str(x) for x in resolutions[quality]])}")
-        log.info(f"Downloading")
-        output_file = WORK_DIR / DOWNLOAD_DIR_NAME / f"{episode_name}.mp4"
+        output_file = WORK_DIR / DOWNLOAD_DIR_NAME / f"{episode_name.replace('/', '|')}.mp4"
+        if output_file.exists():
+            log.warn("File already exists, skipping")
+            continue
         ffmpeg_command = create_ffmpeg_download_command(episode["file"], quality, output_file=output_file)
         ffpb.main(argv=ffmpeg_command, stream=sys.stderr, encoding="utf-8", tqdm=tqdm)
+        # TODO: Handle checking if the file is ok.
         if output_file.exists():
-            append_downloaded_episode(WORK_DIR / PREVRECORDED_LOG, id)
+            append_downloaded_episode(WORK_DIR / DOWNLOAD_LOG, id)
+
+
+def additional_info():
+    log.info(f"Available resolutions: {resolutions_to_str(resolutions)}")
+    log.info(f"You selected quality={quality}:{'x'.join([str(x) for x in resolutions[quality]])}")
 
 
 def resolutions_to_str(resolutions: List[Tuple[int, int]]) -> str:
